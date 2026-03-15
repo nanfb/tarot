@@ -5,10 +5,9 @@ export default defineUniPages({
   globalStyle: {
     navigationStyle: 'default',
     navigationBarTitleText: 'tarot',
-    navigationBarBackgroundColor: '#ccc',
+    navigationBarBackgroundColor: '#FFFFFF',
     navigationBarTextStyle: 'black',
     backgroundColor: '#FFFFFF',
-    titleImage: '/static/images/title.png',
   },
   easycom: {
     autoscan: true,
