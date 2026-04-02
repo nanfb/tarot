@@ -16,6 +16,7 @@ export default defineConfig({
   presets: [
     presetUni({
       attributify: false,
+      remRpx: false,
     }),
     presetIcons({
       scale: 1.2,

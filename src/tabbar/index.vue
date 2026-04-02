@@ -82,7 +82,7 @@ function getColorByIndex(index: number) {
 
 <template>
   <view v-if="customTabbarEnable" class="h-50px pb-safe">
-    <view class="border-and-fixed bg-white" @touchmove.stop.prevent>
+    <view class="border-and-fixed tabbar-container" @touchmove.stop.prevent>
       <view class="h-50px flex items-center">
         <view
           v-for="(item, index) in tabbarList" :key="index"
@@ -134,5 +134,10 @@ function getColorByIndex(index: number) {
   &:active {
     // opacity: 0.8;
   }
+}
+.tabbar-container {
+  background: #0f0f18;
+  border-top: 2rpx solid #3749d4;
+  box-sizing: border-box;
 }
 </style>

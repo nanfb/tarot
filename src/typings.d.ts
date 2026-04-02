@@ -28,6 +28,22 @@ declare global {
     refreshToken?: string
     refreshExpire?: number
   }
+  interface Card {
+    id: number
+    name_cn: string
+    name_en: string
+    rank_number: number
+    description_upright: string
+    description_reversed: string
+    arcana_type: string
+    suit: string | null // 通常 suit 可能是 string 或 null
+    img_alias: string
+    [key: string]: any
+  }
+  interface tarotSysType {
+    role: '1' | '2' // 解读角色
+    drawType: '1' | '2' | '3' // 抽牌类型 单排 | 三圣杯 | 十字
+  }
 }
 
 // 扩展 @uni-helper/vite-plugin-uni-pages 的 definePage 参数类型

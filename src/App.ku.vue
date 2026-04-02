@@ -18,8 +18,6 @@ onShow(() => {
   }
 })
 
-const helloKuRoot = ref('Hello AppKuVue')
-
 const exposeRef = ref('this is form app.Ku.vue')
 
 defineExpose({
@@ -28,14 +26,16 @@ defineExpose({
 </script>
 
 <template>
-  <view>
-    <!-- 这个先隐藏了，知道这样用就行 -->
-    <view class="hidden text-center">
-      {{ helloKuRoot }}，这里可以配置全局的东西
-    </view>
-
+  <view class="root">
     <KuRootView />
 
     <FgTabbar v-if="isCurrentPageTabbar" />
   </view>
 </template>
+
+<style scoped>
+.root {
+  width: 100%;
+  height: 100vh;
+}
+</style>

@@ -89,8 +89,11 @@
     "unocss",
     "uview",
     "uvui",
+    "VITE",
     "Wechat",
     "WechatMiniprogram",
     "Weixin"
-  ]
+  ],
+  "i18n-ally.localesPaths": [],
+  "svn.ignoreMissingSvnWarning": true
 }

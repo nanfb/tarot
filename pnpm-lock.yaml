@@ -78,6 +78,9 @@ importers:
       dayjs:
         specifier: 1.11.10
         version: 1.11.10
+      fast-text-encoding:
+        specifier: ^1.0.6
+        version: 1.0.6
       pinia:
         specifier: 2.0.36
         version: 2.0.36(typescript@5.8.3)(vue@3.4.21(typescript@5.8.3))
@@ -124,15 +127,24 @@ importers:
       '@esbuild/darwin-x64':
         specifier: 0.20.2
         version: 0.20.2
+      '@iconify-json/arcticons':
+        specifier: ^1.2.51
+        version: 1.2.51
       '@iconify-json/carbon':
         specifier: ^1.2.4
         version: 1.2.13
+      '@iconify-json/line-md':
+        specifier: ^1.2.16
+        version: 1.2.16
       '@iconify/utils':
         specifier: ^3.0.2
         version: 3.0.2
       '@rollup/rollup-darwin-x64':
         specifier: ^4.28.0
         version: 4.50.0
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^20.17.9
         version: 20.19.11
@@ -202,6 +214,9 @@ importers:
       lint-staged:
         specifier: ^15.2.10
         version: 15.5.2
+      lodash-es:
+        specifier: ^4.17.23
+        version: 4.17.23
       miniprogram-api-typings:
         specifier: ^4.1.0
         version: 4.1.0
@@ -2113,8 +2128,14 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@iconify-json/arcticons@1.2.51':
+    resolution: {integrity: sha512-GtBqw25EoZmlW75gV7cdHid1QlL/SX4y5OCLgjuVxaXjcsxyG+a4vR0J8ok6Cxr4UJZOG+R6OOGejcTemRlq3g==}
+
   '@iconify-json/carbon@1.2.13':
     resolution: {integrity: sha512-vXrFFKkfYaZSwf4WfnRQJQMnpEzxlPlupwZZlS1WvOAuNnWahsUudHycaMpoBzDqBfniH4KQ2b5qnw0VMKoJug==}
+
+  '@iconify-json/line-md@1.2.16':
+    resolution: {integrity: sha512-esHPUQUp30NyqJWa7MNu6ExdG8z/aEFC5r56rVyRGhtJ7acOme6YtYPnDOgVu6p+kk24rM8602xkFuBC6g6x+w==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -3055,6 +3076,12 @@ packages:
 
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
+
+  '@types/lodash-es@4.17.12':
+    resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
+
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
   '@types/long@4.0.2':
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -5448,6 +5475,9 @@ packages:
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
+  fast-text-encoding@1.0.6:
+    resolution: {integrity: sha512-VhXlQgj9ioXCqGstD37E/HBeqEGV/qOD/kmbVG8h5xKBYvM1L3lR1Zn4555cQ8GkYbJa8aJSipLPndE1k6zK2w==}
+
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
@@ -6634,6 +6664,9 @@ packages:
   locate-path@7.2.0:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lodash-es@4.17.23:
+    resolution: {integrity: sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==}
 
   lodash._basecopy@3.0.1:
     resolution: {integrity: sha512-rFR6Vpm4HeCK1WPGvjZSJ+7yik8d8PVUdCJx5rT2pogG4Ve/2ZS7kfmO5l5T2o5V2mqlNIfSF5MZlr1+xOoYQQ==}
@@ -12660,7 +12693,15 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@iconify-json/arcticons@1.2.51':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/carbon@1.2.13':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/line-md@1.2.16':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -13839,6 +13880,12 @@ snapshots:
   '@types/keyv@3.1.4':
     dependencies:
       '@types/node': 20.19.20
+
+  '@types/lodash-es@4.17.12':
+    dependencies:
+      '@types/lodash': 4.17.24
+
+  '@types/lodash@4.17.24': {}
 
   '@types/long@4.0.2': {}
 
@@ -17008,6 +17055,8 @@ snapshots:
 
   fast-safe-stringify@2.1.1: {}
 
+  fast-text-encoding@1.0.6: {}
+
   fast-uri@3.1.0: {}
 
   fast-xml-parser@4.2.5:
@@ -18436,6 +18485,8 @@ snapshots:
   locate-path@7.2.0:
     dependencies:
       p-locate: 6.0.0
+
+  lodash-es@4.17.23: {}
 
   lodash._basecopy@3.0.1: {}
 

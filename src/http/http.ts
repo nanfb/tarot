@@ -23,7 +23,6 @@ export function http<T>(options: CustomRequestOptions) {
       success: async (res) => {
         const responseData = res.data as IResponse<T>
         const { code } = responseData
-
         // 检查是否是401错误（包括HTTP状态码401或业务码401）
         const isTokenExpired = res.statusCode === 401 || code === 401
 
@@ -59,6 +58,7 @@ export function http<T>(options: CustomRequestOptions) {
                 uni.showToast({
                   title: 'token 刷新成功',
                   icon: 'none',
+                  duration: 1000,
                 })
               })
               // 将任务队列的所有任务重新请求
@@ -74,6 +74,7 @@ export function http<T>(options: CustomRequestOptions) {
                 uni.showToast({
                   title: '登录已过期，请重新登录',
                   icon: 'none',
+                  duration: 1000,
                 })
               })
               // 清除用户信息
@@ -93,12 +94,14 @@ export function http<T>(options: CustomRequestOptions) {
         }
 
         // 处理其他成功状态（HTTP状态码200-299）
+
         if (res.statusCode >= 200 && res.statusCode < 300) {
           // 处理业务逻辑错误
           if (code !== ResultEnum.Success0 && code !== ResultEnum.Success200) {
             uni.showToast({
               icon: 'none',
               title: responseData.msg || responseData.message || '请求错误',
+              duration: 1000,
             })
             return reject(responseData.data)
           }
@@ -110,6 +113,7 @@ export function http<T>(options: CustomRequestOptions) {
         && uni.showToast({
           icon: 'none',
           title: (res.data as any).msg || '请求错误',
+          duration: 1000,
         })
         reject(res)
       },
@@ -118,6 +122,7 @@ export function http<T>(options: CustomRequestOptions) {
         uni.showToast({
           icon: 'none',
           title: '网络错误，换个网络试试',
+          duration: 1000,
         })
         reject(err)
       },
