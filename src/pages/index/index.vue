@@ -1,6 +1,7 @@
 <!-- eslint-disable no-cond-assign -->
 <template>
   <view class="page">
+    <!-- todo:这个mask后面写成组件 -->
     <view class="normal-mask" :class="{ mask: mask }" />
     <view class="check-role" :class="{ select: isSelect, unselect: !isSelect }" @click="debouncedHandleClick">
       <view class="text-white">
@@ -8,15 +9,15 @@
       </view>
       <view class="card">
         <view class="inner" :class="{ flip: !isFlip }">
-          <image class="img front" src="https://picui.ogmua.cn/s1/2026/03/23/69c12da27dd94.webp" />
-          <image class="img back" src="https://picui.ogmua.cn/s1/2026/03/23/69c1340136c65.webp" />
+          <image class="img front" :src="img1" />
+          <image class="img back" :src="img2" />
         </view>
       </view>
     </view>
 
     <view id="content">
       <view class="banner">
-        <image src="https://picui.ogmua.cn/s1/2026/03/23/69c12da27dd94.webp" />
+        <image :src="img1" />
       </view>
 
       <input v-model.trim="userInput" class="input mt-30rpx" type="text" placeholder="请在心中默念您的困惑或者在此输入">
@@ -39,18 +40,19 @@
       </view>
     </view>
     <card ref="card_ref" :mask="{ maskShow, maskHide }" :aiResolve="aiResolve" />
-    <loading v-bind="loading_config" />
   </view>
 </template>
 
 <script setup lang="ts">
 import { debounce, throttle } from 'lodash-es'
-import { useLocalLoading } from '@/hooks/useLocalLoading'
+import { useGlobalLoading } from '@/hooks/useLoading'
 import { httpPost } from '@/http/http'
 import { useTarotInfosStore } from '@/store/sys'
 import { getEnvBaseUrl } from '@/utils'
 import card from './components/card.vue'
 
+const img1 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBevxp09zr-dDk1bFvGxt-VZ7q1bNgbQACqwxrG4nwoUYVFhI0D1yYGQEAAwIAA3cAAzsE.jpg'
+const img2 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBev1p090tEG_XGtg6F4s34bo37U8zcgACrAxrG4nwoUZrXy5b4cVpywEAAwIAA3cAAzsE.jpg'
 definePage({
   type: 'home',
   style: {
@@ -59,8 +61,13 @@ definePage({
   },
 })
 
+const baseUrl = getEnvBaseUrl()
+const urls = {
+  draw: '/api/tarot/draw',
+  aiInterpret: `${baseUrl}/api/tarot/aiInterpret`,
+}
 // #region init
-const { loading_config, showLoading, hideLoading } = useLocalLoading()
+const { showLoading, hideLoading } = useGlobalLoading()
 const sys = useTarotInfosStore()
 // #endregion
 
@@ -84,8 +91,6 @@ watch(isFlip, () => {
   }, 800)
 })
 
-console.log(isFlip.value, sys.role)
-const baseUrl = getEnvBaseUrl()
 // 卡片组件
 const card_ref = ref<InstanceType<typeof card> | null>(null)
 
@@ -97,7 +102,7 @@ function drawCards() {
   showLoading('正在感知命运...')
   drawResult.value = null
   responseText.value = ''
-  httpPost<{ cards: Card[] }>('/api/tarot/draw', { type: sys.role }).then((res) => {
+  httpPost<{ cards: Card[] }>(urls.draw, { type: sys.role }).then((res) => {
     drawResult.value = res.cards[0]
     drawResult.value.sign = false
     responseText.value += `牌面：${drawResult.value.name_cn} (${drawResult.value.is_reversed ? '逆位' : '正位'})`
@@ -139,7 +144,7 @@ function aiResolve() {
   showLoading('正在解读中ing...')
   responseText.value += `\n解析：`
   const requestTask = wx.request({
-    url: `${baseUrl}/api/tarot/aiInterpret`,
+    url: urls.aiInterpret,
     method: 'POST',
     data: { cards: [drawResult.value], userNotes: userInput.value, inInterpret_role: sys.role },
     enableChunked: true, // 开启分块传输模式

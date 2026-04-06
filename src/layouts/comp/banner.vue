@@ -45,6 +45,7 @@ function getRandomStyle(index) {
   color: #fff;
   pointer-events: none !important;
   overflow: hidden;
+  z-index: -1;
 }
 
 .star {

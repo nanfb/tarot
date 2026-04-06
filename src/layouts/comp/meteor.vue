@@ -74,7 +74,7 @@ function drawSingleTrail(star) {
   }
   ctx.restore()
 }
-
+let animationFrameId = null
 // 动画循环
 function renderLoop() {
   if (!canvas || !isAnimating)
@@ -113,14 +113,24 @@ function renderLoop() {
     }
     drawSingleTrail(star)
   }
+
   if (canvas.requestAnimationFrame) {
-    canvas.requestAnimationFrame(renderLoop)
+    animationFrameId = canvas.requestAnimationFrame(renderLoop)
   }
   else {
-    window.requestAnimationFrame(renderLoop)
+    animationFrameId = window.requestAnimationFrame(renderLoop)
   }
 }
-
+onBeforeUnmount(() => {
+  clearInterval(starCreatorTimer)
+  isAnimating = false
+  if (canvas && canvas.cancelAnimationFrame) {
+    canvas.cancelAnimationFrame(animationFrameId)
+  }
+  else {
+    window.cancelAnimationFrame(animationFrameId)
+  }
+})
 // 初始化生成器
 function startStarGeneration() {
   const createOne = () => {
@@ -150,7 +160,6 @@ onMounted(() => {
 
       const canvasNode = res[0].node
       const canvasCtx = canvasNode.getContext('2d')
-
       canvasWidth.value = res[0].width
       canvasHeight.value = res[0].height
 
@@ -180,6 +189,6 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  /* z-index: 1; */
+  z-index: -1;
 }
 </style>

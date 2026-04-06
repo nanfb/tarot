@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useGlobalLoading } from '@/hooks/useLoading'
 import FgTabbar from '@/tabbar/index.vue'
 import { isPageTabbar } from './tabbar/store'
 import { currRoute } from './utils'
 
+const { loading_config } = useGlobalLoading()
 const isCurrentPageTabbar = ref(true)
 onShow(() => {
   console.log('App.ku.vue onShow', currRoute())
@@ -18,15 +20,17 @@ onShow(() => {
   }
 })
 
-const exposeRef = ref('this is form app.Ku.vue')
+// const exposeRef = ref('this is form app.Ku.vue')
 
 defineExpose({
-  exposeRef,
+  // exposeRef,
+
 })
 </script>
 
 <template>
   <view class="root">
+    <loading v-if="loading_config.loading" v-bind="loading_config" />
     <KuRootView />
 
     <FgTabbar v-if="isCurrentPageTabbar" />

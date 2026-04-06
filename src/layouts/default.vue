@@ -1,7 +1,8 @@
 <template>
   <view :style="{ height: `${safeHeight}px`, width: '100%' }" class="page-bg-color" />
   <view :style="{ height: `${safeHeight}px`, width: '100%' }" />
-  <view class="container" :style="{ height: `calc(100vh - 50px - env(safe-area-inset-bottom) - ${safeHeight}px)` }">
+  <!-- 50px为tabbar高度，注意单位是px -->
+  <view class="box-container" :style="{ height: `calc(100vh - 50px - env(safe-area-inset-bottom) - ${safeHeight}px)` }">
     <banner />
     <slot />
   </view>
@@ -23,7 +24,7 @@ if (wx.getMenuButtonBoundingClientRect) {
   top: 0px;
   z-index: 999;
 }
-.container {
+.box-container {
   width: 100%;
   position: relative;
   overflow: hidden;
