@@ -39,16 +39,18 @@
         <view class="i-carbon-arrow-right"></view>
       </view>
     </view>
-    <view class="login-btn center" hover-class="login-hover" :hover-start-time="50">
+    <view class="login-btn center" hover-class="login-hover" :hover-start-time="50" @click="handleLogin">
       立即登录
     </view>
   </view>
 </template>
 
 <script lang="ts" setup>
+import { useGlobalLoading } from '@/hooks/useLoading'
 import { LOGIN_PAGE } from '@/router/config'
 import { useTokenStore } from '@/store/token'
 
+const { showLoading, hideLoading } = useGlobalLoading()
 const { height: safeHeight } = wx.getMenuButtonBoundingClientRect()
 definePage({
   style: {

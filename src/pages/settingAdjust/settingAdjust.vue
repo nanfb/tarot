@@ -69,7 +69,7 @@ definePage({
 })
 
 const urls = {
-  getConfig: '/api/user/config',
+  getConfig: '/api/user/info',
 }
 onLoad(() => {
   getConfig()
@@ -78,7 +78,7 @@ onLoad(() => {
 function getConfig() {
   showLoading('获取配置信息...')
   httpGet(urls.getConfig).then((res) => {
-
+    console.log(res, 'res')
   }).finally(() => {
     hideLoading()
   })

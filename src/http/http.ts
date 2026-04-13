@@ -23,6 +23,7 @@ export function http<T>(options: CustomRequestOptions) {
       success: async (res) => {
         const responseData = res.data as IResponse<T>
         const { code } = responseData
+        console.log(responseData, 'data')
         // 检查是否是401错误（包括HTTP状态码401或业务码401）
         const isTokenExpired = res.statusCode === 401 || code === 401
 

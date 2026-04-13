@@ -27,7 +27,7 @@ export type UserRole = string
 
 export interface IUserInfoRes {
   userId: number
-  username: string
+  // username: string
   nickname: string
   avatar?: string
   /** 同时支持单角色和多角色，你自行选择一种就行 */

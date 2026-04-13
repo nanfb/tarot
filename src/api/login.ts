@@ -22,7 +22,7 @@ export function getCode() {
  * @param loginForm 登录表单
  */
 export function login(loginForm: ILoginForm) {
-  return http.post<IAuthLoginRes>('/auth/login', loginForm)
+  return http.post<IAuthLoginRes>('/api/login/wxLogin', loginForm)
 }
 
 /**
@@ -37,7 +37,7 @@ export function refreshToken(refreshToken: string) {
  * 获取用户信息
  */
 export function getUserInfo() {
-  return http.get<IUserInfoRes>('/user/info')
+  return http.get<IUserInfoRes>('/api/user/info')
 }
 
 /**
@@ -81,5 +81,5 @@ export function getWxCode() {
  * @returns Promise 包含登录结果
  */
 export function wxLogin(data: { code: string }) {
-  return http.post<IAuthLoginRes>('/auth/wxLogin', data)
+  return http.post<IAuthLoginRes>('/api/login/wxLogin', data)
 }

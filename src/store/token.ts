@@ -33,7 +33,6 @@ export const useTokenStore = defineStore(
   () => {
     // 定义用户信息
     const tokenInfo = ref<IAuthLoginRes>({ ...tokenInfoState })
-
     // 添加一个时间戳 ref 作为响应式依赖
     const nowTime = ref(Date.now())
     /**
@@ -51,7 +50,6 @@ export const useTokenStore = defineStore(
     const setTokenInfo = (val: IAuthLoginRes) => {
       updateNowTime()
       tokenInfo.value = val
-
       // 计算并存储过期时间
       const now = Date.now()
       if (isSingleTokenRes(val)) {
@@ -237,11 +235,10 @@ export const useTokenStore = defineStore(
      * 建议这样使用 tokenStore.updateNowTime().validToken
      */
     const getValidToken = computed(() => {
-      // token已过期，返回空
+      // token已过期，返回空，ps，这个不判空也行，不过后端要加白名单，看具体情况
       if (isTokenExpired.value) {
         return ''
       }
-
       if (!isDoubleTokenMode) {
         return isSingleTokenRes(tokenInfo.value) ? tokenInfo.value.token : ''
       }
