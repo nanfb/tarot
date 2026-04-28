@@ -30,7 +30,7 @@ export function useGlobalLoading() {
   }
 
   const hideLoading = () => {
-    // 容错处理：防止计数器变成负数
+    // 防止计数器变成负数
     loadingCount.value = Math.max(0, loadingCount.value - 1)
 
     if (loadingCount.value === 0) {

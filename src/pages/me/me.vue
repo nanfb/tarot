@@ -4,21 +4,26 @@
       <view class="item" hover-class="item-hover" :hover-start-time="50">
         <view>
           <view class="i-carbon-user-avatar-filled-alt icon"></view>
-          游客
+          <template v-if="tokenStore.hasLogin">
+            {{ hasLoginOfUserInfo?.username || hasLoginOfUserInfo?.nickname }}
+          </template>
+          <template v-else>
+            游客
+          </template>
         </view>
         <!-- <view class="i-carbon-arrow-right"></view> -->
       </view>
-      <view class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/history/history')">
+      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/history/history')">
         <view>
           <view class="i-carbon-time icon"></view>
           历史记录
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
-      <view class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingAdjust/settingAdjust')">
+      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingAdjust/settingAdjust')">
         <view>
           <view class="i-carbon-settings-adjust icon"></view>
-          配置
+          抽牌配置
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
@@ -38,8 +43,15 @@
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
+      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingPage/settingPage')">
+        <view>
+          <view class="i-carbon-user-settings icon"></view>
+          设置
+        </view>
+        <view class="i-carbon-arrow-right"></view>
+      </view>
     </view>
-    <view class="login-btn center" hover-class="login-hover" :hover-start-time="50" @click="handleLogin">
+    <view v-if="!tokenStore.hasLogin" class="login-btn center" hover-class="login-hover" :hover-start-time="50" @click="handleLogin">
       立即登录
     </view>
   </view>
@@ -49,6 +61,7 @@
 import { useGlobalLoading } from '@/hooks/useLoading'
 import { LOGIN_PAGE } from '@/router/config'
 import { useTokenStore } from '@/store/token'
+import { useUserStore } from '@/store/user'
 
 const { showLoading, hideLoading } = useGlobalLoading()
 const { height: safeHeight } = wx.getMenuButtonBoundingClientRect()
@@ -60,6 +73,15 @@ definePage({
 })
 
 const tokenStore = useTokenStore()
+
+const hasLoginOfUserInfo = ref<any>(null)
+
+watchEffect(() => {
+  if (tokenStore.hasLogin) {
+    const userStore = useUserStore()
+    hasLoginOfUserInfo.value = userStore.userInfo
+  }
+})
 
 // 微信小程序下登录
 async function handleLogin() {

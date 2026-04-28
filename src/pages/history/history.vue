@@ -6,7 +6,7 @@
 
 <script lang="ts" setup>
 definePage({
-  layout: 'defaultHaveBack',
+  layout: 'needloginDefaultHaveBack',
   style: {
     navigationBarTitleText: '历史记录',
     navigationStyle: 'custom',

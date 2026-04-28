@@ -61,7 +61,7 @@ import { httpGet } from '@/http/http'
 
 const { showLoading, hideLoading } = useGlobalLoading()
 definePage({
-  layout: 'defaultHaveBack',
+  layout: 'needloginDefaultHaveBack',
   style: {
     navigationBarTitleText: '配置',
     navigationStyle: 'custom',
