@@ -36,13 +36,13 @@
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
-      <view class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/feedback/feedback')">
+      <!-- <view class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/feedback/feedback')">
         <view>
           <view class="i-carbon-user-feedback icon"></view>
           反馈
         </view>
         <view class="i-carbon-arrow-right"></view>
-      </view>
+      </view> -->
       <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingPage/settingPage')">
         <view>
           <view class="i-carbon-user-settings icon"></view>

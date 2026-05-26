@@ -1,58 +1,74 @@
-<!-- eslint-disable no-cond-assign -->
 <template>
   <view class="page">
-    <!-- todo:这个mask后面写成组件 -->
-    <view class="normal-mask" :class="{ mask: mask }" />
-    <view class="check-role" :class="{ select: isSelect, unselect: !isSelect }" @click="debouncedHandleClick">
-      <view class="text-white">
-        选择角色
+    <view class="normal-mask" :class="{ mask }" />
+    <view id="content">
+      <view class="hero-card">
+        <view class="hero-badge">
+          {{ activeSpreadMeta.title }}
+        </view>
+        <view class="hero-title">
+          跟随直觉抽一组牌
+        </view>
+        <view class="hero-subtitle">
+          {{ activeSpreadMeta.subtitle }}
+        </view>
+        <image class="hero-image" :src="sys.role === '1' ? img1 : img2" />
       </view>
-      <view class="card">
-        <view class="inner" :class="{ flip: !isFlip }">
-          <image class="img front" :src="img1" />
-          <image class="img back" :src="img2" />
+
+      <view class="session-card mt-50rpx w-85%">
+        <view class="session-head">
+          <view class="session-tag">
+            {{ activeSpreadMeta.title }}
+          </view>
+          <view class="session-tag subtle">
+            {{ roleLabel }}
+          </view>
+        </view>
+        <view class="session-text">
+          {{ drawSummary || '点击下方按钮开始抽取' }}
         </view>
       </view>
-    </view>
 
-    <view id="content">
-      <view class="banner">
-        <image :src="img1" />
-      </view>
+      <input v-model.trim="userInput" class="input mt-30rpx w-85%" type="text" placeholder="把你此刻最在意的问题留在这里" />
 
-      <input v-model.trim="userInput" class="input mt-30rpx" type="text" placeholder="请在心中默念您的困惑或者在此输入">
-
-      <scroll-view class="coninter mt-30rpx w-80%" scroll-y scroll-with-animation :scroll-top="scrollTop">
-        {{ responseText ? responseText : '点击下方按钮抽牌~' }}
-      </scroll-view>
-      <view class="draw-btn mt-30rpx" @click="drawCards">
+      <view class="draw-btn mt-50rpx w-85%" @click="drawCards">
         <view class="decoration">
           <view class="moon i-line-md:moon-filled-alt-loop" />
           <view class="tarot i-arcticons:tarot-stars animate-spin animate-duration-120s animate-reverse" />
         </view>
         <view class="center">
           抽
-          -
           <view class="star i-line-md:star-alt-filled" />
-          -
           牌
         </view>
       </view>
     </view>
-    <card ref="card_ref" :mask="{ maskShow, maskHide }" :aiResolve="aiResolve" />
+
+    <CardPanel
+      ref="card_ref"
+      :roleLabel="roleLabel"
+      :mask="{ maskShow, maskHide }"
+      :ai-resolve="aiResolve"
+      :interpretation-text="interpretationText"
+      :is-interpreting="isInterpreting"
+      :has-interpretation="drawResolved"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { debounce, throttle } from 'lodash-es'
+import { throttle } from 'lodash-es'
 import { useGlobalLoading } from '@/hooks/useLoading'
 import { httpPost } from '@/http/http'
 import { useTarotInfosStore } from '@/store/sys'
+import { useTokenStore } from '@/store/token'
 import { getEnvBaseUrl } from '@/utils'
-import card from './components/card.vue'
+import CardPanel from './components/card.vue'
+import { buildDisplayCards, formatDrawSummary, getSpreadMeta } from './components/spread'
 
 const img1 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBevxp09zr-dDk1bFvGxt-VZ7q1bNgbQACqwxrG4nwoUYVFhI0D1yYGQEAAwIAA3cAAzsE.jpg'
 const img2 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBev1p090tEG_XGtg6F4s34bo37U8zcgACrAxrG4nwoUZrXy5b4cVpywEAAwIAA3cAAzsE.jpg'
+
 definePage({
   type: 'home',
   style: {
@@ -61,134 +77,168 @@ definePage({
   },
 })
 
+const roleNameMap: Record<tarotSysType['role'], string> = {
+  1: '司南',
+  2: '安可',
+}
+
 const baseUrl = getEnvBaseUrl()
 const urls = {
   draw: '/api/tarot/draw',
   aiInterpret: `${baseUrl}/api/tarot/aiInterpret`,
 }
-// #region init
+
 const { showLoading, hideLoading } = useGlobalLoading()
 const sys = useTarotInfosStore()
-// #endregion
+const tokenStore = useTokenStore()
 
-const isFlip = computed(
-  () => sys.role === '1',
-)
-const isSelect = ref(false)
-const debouncedHandleClick = debounce(handlecheck, 800, {
-  leading: true,
-  trailing: false,
-})
-function handlecheck() {
-  if (isSelect.value)
-    sys.role === '1' ? sys.setRole('2') : sys.setRole('1')
-  else
-    isSelect.value = true
-}
-watch(isFlip, () => {
-  setTimeout(() => {
-    isSelect.value = false
-  }, 800)
-})
+const activeSpreadMeta = computed(() => getSpreadMeta(sys.drawType))
+const roleLabel = computed(() => roleNameMap[sys.role] ?? roleNameMap['1'])
 
-// 卡片组件
-const card_ref = ref<InstanceType<typeof card> | null>(null)
-
-// 抽牌
-const responseText = ref('')
-const drawResult = ref<any>(null)
-
-function drawCards() {
-  showLoading('正在感知命运...')
-  drawResult.value = null
-  responseText.value = ''
-  httpPost<{ cards: Card[] }>(urls.draw, { type: sys.role }).then((res) => {
-    drawResult.value = res.cards[0]
-    drawResult.value.sign = false
-    responseText.value += `牌面：${drawResult.value.name_cn} (${drawResult.value.is_reversed ? '逆位' : '正位'})`
-    card_ref.value?.show({
-      name: drawResult.value.name_cn,
-      is_reversed: drawResult.value.is_reversed,
-      desc: drawResult.value.is_reversed ? drawResult.value.description_reversed : drawResult.value.description_upright,
-    })
-  }).catch((err) => {
-    console.error('抽牌失败', err)
-  }).finally(() => {
-    hideLoading()
-  })
-}
-// 解读
-const scrollTop = ref(0)
-const scrollToBottom = throttle(() => {
-  nextTick(() => {
-    scrollTop.value = scrollTop.value === 99999 ? 99998 : 99999
-  })
-}, 100)
-const decoder = new TextDecoder('utf-8')
+const card_ref = ref<InstanceType<typeof CardPanel> | null>(null)
+const drawResults = ref<Card[]>([])
+const drawResolved = ref(false)
+const drawSummary = ref('')
+const interpretationText = ref('')
+const isInterpreting = ref(false)
 const userInput = ref('')
+
+async function drawCards() {
+  if (isInterpreting.value) {
+    uni.showToast({
+      title: '请等待当前解读完成',
+      icon: 'none',
+    })
+    return
+  }
+
+  showLoading(`正在展开${activeSpreadMeta.value.title}...`)
+  drawResults.value = []
+  drawResolved.value = false
+  drawSummary.value = ''
+  interpretationText.value = ''
+
+  try {
+    const res = await httpPost<{ cards: Card[] }>(urls.draw, {
+      type: sys.drawType,
+    })
+
+    drawResults.value = res.cards ?? []
+    if (!drawResults.value.length) {
+      throw new Error('draw api returned empty cards')
+    }
+
+    drawSummary.value = formatDrawSummary(drawResults.value, sys.drawType)
+    card_ref.value?.show({
+      cards: buildDisplayCards(drawResults.value, sys.drawType),
+    })
+  }
+  catch (error) {
+    console.error('draw cards failed', error)
+    uni.showToast({
+      title: '抽牌失败，请稍后再试',
+      icon: 'none',
+    })
+  }
+  finally {
+    hideLoading()
+  }
+}
+
+const decoder = new TextDecoder('utf-8')
+const scrollToBottom = throttle(() => {
+  nextTick(() => {})
+}, 100)
+
 function aiResolve() {
-  if (!drawResult.value) {
+  if (!drawResults.value.length) {
     uni.showToast({
       title: '请先抽牌',
-      icon: 'error',
+      icon: 'none',
     })
     return
   }
-  if (drawResult.value.sign) {
+
+  if (drawResolved.value) {
     uni.showToast({
-      title: '此牌面已解析过了，请先抽牌',
-      icon: 'error',
+      title: '本次牌阵已经解读过了',
+      icon: 'none',
     })
     return
   }
-  showLoading('正在解读中ing...')
-  responseText.value += `\n解析：`
+  if (isInterpreting.value) {
+    return
+  }
+
+  showLoading('正在整理解读...')
+  interpretationText.value = ''
+  isInterpreting.value = true
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  const token = tokenStore.updateNowTime().validToken
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
   const requestTask = wx.request({
     url: urls.aiInterpret,
     method: 'POST',
-    data: { cards: [drawResult.value], userNotes: userInput.value, inInterpret_role: sys.role },
-    enableChunked: true, // 开启分块传输模式
+    header: headers,
+    data: {
+      cards: drawResults.value,
+      userNotes: userInput.value,
+      inInterpret_role: sys.role,
+      drawType: sys.drawType,
+    },
+    enableChunked: true,
     success: (res) => {
       if (res.statusCode !== 200) {
         uni.showToast({
           icon: 'none',
-          title: '请求错误',
-          duration: 1000,
+          title: '解读请求失败',
+          duration: 1200,
         })
         return
       }
-      else {
-        drawResult.value.sign = true // 标记当前牌面已经解析过了
-      }
+
+      drawResolved.value = true
     },
-    fail: (err) => {
-      console.log('请求失败', err)
+    fail: (error) => {
+      console.error('interpret request failed', error)
+      uni.showToast({
+        icon: 'none',
+        title: '解读失败，请稍后重试',
+      })
     },
     complete: () => {
       hideLoading()
+      isInterpreting.value = false
     },
   })
+
   let byteBuffer = new Uint8Array(0)
   let pendingText = ''
+
   requestTask.onChunkReceived((res) => {
     hideLoading()
 
-    // 1. 将新收到的 ArrayBuffer 转为 Uint8Array 并拼接到缓冲区
     const newChunk = new Uint8Array(res.data)
     const combined = new Uint8Array(byteBuffer.length + newChunk.length)
     combined.set(byteBuffer)
     combined.set(newChunk, byteBuffer.length)
 
-    // 2. 找到最后一个完整 UTF-8 字符的边界，防止 decode 报错
     let end = combined.length
-    // UTF-8 多字节字符的延续字节以 10xxxxxx (0x80) 开头
     while (end > 0 && (combined[end - 1] & 0xC0) === 0x80) {
       end--
     }
-    // 检查基本字节，判断该字符是否完整
+
     if (end > 0) {
       const lastByte = combined[end - 1]
       let expectedLen = 1
+
       if ((lastByte & 0xE0) === 0xC0)
         expectedLen = 2
       else if ((lastByte & 0xF0) === 0xE0)
@@ -201,7 +251,6 @@ function aiResolve() {
       }
     }
 
-    // 3. 解码安全的部分并存入 pendingText，留下的残缺字节存入 byteBuffer
     const safePart = combined.slice(0, end)
     byteBuffer = combined.slice(end)
 
@@ -212,33 +261,34 @@ function aiResolve() {
     while (pendingText.includes('\n\n')) {
       const separatorIndex = pendingText.indexOf('\n\n')
       const fullLine = pendingText.slice(0, separatorIndex).trim()
-
-      // 更新 pendingText，去掉已处理的部分
       pendingText = pendingText.slice(separatorIndex + 2)
 
-      if (fullLine.startsWith('data: ')) {
-        try {
-          const jsonStr = fullLine.slice(6).trim()
-          if (jsonStr && jsonStr !== '[DONE]') {
-            const result = JSON.parse(jsonStr)
-            responseText.value += result.content
+      if (!fullLine.startsWith('data: ')) {
+        continue
+      }
 
-            // 如果需要自动滚动，这里是触发时机
-            scrollToBottom()
-          }
-        }
-        catch (e) {
-          console.warn('解析 JSON 失败:', fullLine)
-        }
+      try {
+        const jsonStr = fullLine.slice(6).trim()
+        if (!jsonStr || jsonStr === '[DONE]')
+          continue
+
+        const result = JSON.parse(jsonStr)
+        interpretationText.value += result.content ?? ''
+        scrollToBottom()
+      }
+      catch (error) {
+        console.warn('parse stream chunk failed', fullLine, error)
       }
     }
   })
 }
 
 const mask = ref(false)
+
 function maskShow() {
   mask.value = true
 }
+
 function maskHide() {
   mask.value = false
 }
@@ -249,6 +299,7 @@ function maskHide() {
   width: 100%;
   height: 100%;
   color: #fff;
+
   .normal-mask {
     position: absolute;
     top: 0;
@@ -258,174 +309,178 @@ function maskHide() {
     z-index: 2;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.5s;
+    transition: opacity 0.2s ease;
   }
+
   .mask {
     pointer-events: auto !important;
     overflow: hidden;
     touch-action: none;
-    background-color: #000;
-    opacity: 0.6;
-  }
-}
-
-.select {
-  transform: translate(0, 0);
-  transition: all 1s;
-}
-
-.unselect {
-  transform: translate(-130rpx, 0);
-  transition: all 1s;
-}
-
-.check-role {
-  position: absolute;
-  top: 60rpx;
-  width: 240rpx;
-  height: 100rpx;
-  color: #f0fdfa;
-  background-color: #302b7640;
-  backdrop-filter: blur(10rpx);
-  border-radius: 0 120rpx 120rpx 0;
-  border: 1px solid #e5dfaf6e;
-  border-left: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20rpx;
-  box-sizing: border-box;
-
-  .card {
-    height: 70%;
-    aspect-ratio: 1 / 1;
-  }
-
-  .inner {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-    border-radius: 50%;
-  }
-
-  .inner.flip {
-    transform: rotateY(180deg);
-  }
-
-  .img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2rpx solid #fc7c7c;
-    vertical-align: baseline;
-  }
-
-  .back {
-    transform: rotateY(180deg);
-    border: 2rpx solid #78eb78;
+    background-color: #000000;
+    opacity: 0.1;
   }
 }
 
 #content {
   height: 100%;
-  padding: 180rpx 20rpx 50rpx 20rpx;
+  padding: 200rpx 24rpx 56rpx;
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
   align-items: center;
-  // justify-content: space-between;
+}
 
-  .banner {
-    width: 60%;
-    height: 400rpx;
-    border-radius: 20rpx;
-    overflow: hidden;
-    opacity: 0.5;
-    image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+.hero-card {
+  width: 85%;
+  height: 280rpx;
+  padding: 30rpx 30rpx 34rpx;
+  border-radius: 34rpx;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(255, 226, 154, 0.18), transparent 32%),
+    linear-gradient(155deg, rgba(27, 29, 74, 0.82), rgba(11, 17, 38, 0.86));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20rpx 44rpx rgba(7, 9, 21, 0.32);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-badge {
+  display: inline-flex;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  color: #ffe8ac;
+  background: rgba(255, 219, 130, 0.12);
+  border: 1px solid rgba(255, 219, 130, 0.18);
+}
+
+.hero-title {
+  margin-top: 18rpx;
+  font-size: 42rpx;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hero-subtitle {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-image {
+  position: absolute;
+  right: -24rpx;
+  bottom: -32rpx;
+  width: 210rpx;
+  height: 210rpx;
+  border-radius: 28rpx;
+  opacity: 0.18;
+  transform: rotate(-10deg);
+}
+
+.session-card {
+  box-sizing: border-box;
+  padding: 24rpx 28rpx;
+  border-radius: 28rpx;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(150deg, rgba(51, 30, 154, 0.12), rgba(26, 24, 65, 0.16));
+  backdrop-filter: blur(15rpx);
+}
+
+.session-head {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  flex-wrap: wrap;
+}
+
+.session-tag {
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  color: #fff2bf;
+  background: rgba(255, 221, 143, 0.12);
+}
+
+.session-tag.subtle {
+  color: rgba(227, 240, 255, 0.86);
+  background: rgba(112, 154, 255, 0.16);
+}
+
+.session-text {
+  margin-top: 18rpx;
+  white-space: pre-wrap;
+  font-size: 24rpx;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.input {
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  height: 88rpx;
+  padding: 0 30rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  background: linear-gradient(150deg, rgba(51, 30, 154, 0.1), rgba(26, 24, 65, 0.12));
+  backdrop-filter: blur(15rpx);
+  color: #fff;
+  font-size: 28rpx;
+
+  &:focus-within {
+    outline: none;
+    border-color: rgba(135, 179, 232, 0.76);
+    box-shadow: 0 0 18rpx rgba(96, 145, 255, 0.18);
   }
-  .input {
-    width: 80%;
-    box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    height: 80rpx;
-    padding: 0 30rpx;
-    line-height: 80rpx;
-    border-radius: 40rpx;
-    background: linear-gradient(150deg, #331e9a0a, rgba(26, 24, 65, 0.08));
-    backdrop-filter: blur(15rpx);
-    color: #fff;
-    transition: all 0.3s ease;
-    font-size: 28rpx;
-    &:focus-within {
-      outline: none;
-      border: 1px solid #87b3e8;
-      background: linear-gradient(150deg, rgba(51, 30, 154, 0.2), rgba(89, 140, 163, 0.1));
-      box-shadow: 0 0 15rpx rgba(205, 69, 69, 0.3); // 增加一点微光效果
-    }
-  }
-  .draw-btn {
-    width: 80%;
-    height: 160rpx;
-    box-sizing: border-box;
+}
+
+.draw-btn {
+  height: 164rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(150deg, rgba(41, 27, 102, 0.4), rgba(14, 57, 76, 0.28));
+  border: 2rpx solid rgba(224, 231, 255, 0.12);
+  color: #f0fdfa;
+  position: relative;
+  box-shadow: 0 0 12rpx rgba(224, 231, 255, 0.22);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+
+  .center {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 36rpx;
-    border-radius: 24rpx;
-    background: linear-gradient(150deg, #331e9a0a, rgba(26, 24, 65, 0.08));
-    border: 2rpx solid #e0e7ff0a;
-    color: #f0fdfa;
-    transition: transform 1s ease;
-    position: relative;
-    box-shadow: 0 0 8rpx 0 #e0e7ff;
-    overflow: hidden;
-    /* 1. 基础透明背景 */
-    // background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(5px);
-    .decoration {
-      .moon {
-        position: absolute;
-        font-size: 36rpx;
-        bottom: 30rpx;
-        right: 30rpx;
-        color: #e0e7ff;
-      }
+    gap: 14rpx;
+    font-weight: 600;
+    letter-spacing: 6rpx;
+  }
 
-      .tarot {
-        position: absolute;
-        font-size: 180rpx;
-        top: -110rpx;
-        left: -90rpx;
-        color: #e1dc79;
-      }
+  .decoration {
+    .moon {
+      position: absolute;
+      font-size: 38rpx;
+      bottom: 28rpx;
+      right: 28rpx;
+      color: #e0e7ff;
     }
 
-    .star {
-      margin: 8rpx 0rpx 0 0rpx;
-      font-size: 24rpx;
-      color: #e1dc79;
+    .tarot {
+      position: absolute;
+      font-size: 188rpx;
+      top: -106rpx;
+      left: -80rpx;
+      color: rgba(225, 220, 121, 0.9);
     }
   }
-  .coninter {
-    box-sizing: border-box;
-    padding: 20rpx;
-    /* 自动换行 */
-    white-space: pre-wrap;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 30rpx;
-    flex: 1;
-    overflow: scroll;
-    scroll-y: auto;
-    backdrop-filter: blur(5px);
-    background: linear-gradient(150deg, #331e9a0a, rgba(26, 24, 65, 0.08));
+
+  .star {
+    font-size: 26rpx;
+    color: #e1dc79;
   }
 }
 </style>

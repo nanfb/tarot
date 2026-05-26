@@ -162,8 +162,7 @@ onMounted(() => {
       const canvasCtx = canvasNode.getContext('2d')
       canvasWidth.value = res[0].width
       canvasHeight.value = res[0].height
-
-      const dpr = uni.getSystemInfoSync().pixelRatio
+      const dpr = uni.getWindowInfo().pixelRatio
       canvasNode.width = canvasWidth.value * dpr
       canvasNode.height = canvasHeight.value * dpr
       canvasCtx.scale(dpr, dpr)

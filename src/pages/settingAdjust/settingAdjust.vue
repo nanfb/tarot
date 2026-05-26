@@ -1,6 +1,23 @@
 <template>
   <view class="container">
-    <view v-for="(group, index) in configLayout" :key="index" class="config-group">
+    <view class="hero">
+      <view class="hero-title">
+        抽牌配置
+      </view>
+      <view class="hero-subtitle">
+        保存后会同步首页默认牌阵和解读人物，历史记录也会按当前设置写入。
+      </view>
+      <view class="hero-pills">
+        <view class="pill">
+          {{ currentSpreadName }}
+        </view>
+        <view class="pill subtle">
+          {{ currentCharacterName }}
+        </view>
+      </view>
+    </view>
+
+    <view v-for="group in configLayout" :key="group.key" class="config-group">
       <view class="group-header">
         <text class="group-title">{{ group.name }}</text>
         <text class="group-subtitle">{{ group.subtitle }}</text>
@@ -12,25 +29,25 @@
           :class="{ 'is-selected': currentSpread === item.id }" @tap="selectSpread(item.id)"
         >
           <view class="spread-icon">
-            <text class="iconfont">{{ item.icon }}</text>
+            {{ item.icon }}
           </view>
-          <view class="spread-content">
-            <text class="spread-name">{{ item.name }}</text>
-            <text class="spread-desc">{{ item.desc }}</text>
+          <view class="spread-name">
+            {{ item.name }}
           </view>
-          <view v-if="currentSpread === item.id" class="selected-mark">
-            <text class="inner-tick"></text>
+          <view class="spread-desc">
+            {{ item.desc }}
           </view>
+          <view v-if="currentSpread === item.id" class="selected-mark" />
         </view>
       </view>
 
-      <view v-else-if="group.key === 'character'" class="character-container">
+      <view v-else class="character-container">
         <view
           v-for="item in group.list" :key="item.id" class="character-card"
           :class="[`card-${item.id}`, { 'is-selected': currentCharacter === item.id }]" @tap="selectCharacter(item.id)"
         >
-          <view class="char-avatar-placeholder">
-            <text class="char-legacy">{{ item.name[0] }}</text>
+          <view class="char-avatar">
+            {{ item.name[0] }}
           </view>
 
           <view class="char-info">
@@ -41,25 +58,32 @@
             <text class="char-desc">{{ item.desc }}</text>
           </view>
 
-          <view class="select-glow"></view>
+          <view v-if="currentCharacter === item.id" class="char-check">
+            当前
+          </view>
         </view>
       </view>
     </view>
 
     <view class="action-bar">
-      <button class="save-btn">
-        保存配置
+      <button class="save-btn" :disabled="isSaving" @tap="saveConfig">
+        {{ isSaving ? '保存中...' : '保存配置' }}
       </button>
     </view>
   </view>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { updateTarotPreferences } from '@/api/tarot'
 import { useGlobalLoading } from '@/hooks/useLoading'
-import { httpGet } from '@/http/http'
+import { useTarotInfosStore } from '@/store/sys'
+import { useUserStore } from '@/store/user'
 
 const { showLoading, hideLoading } = useGlobalLoading()
+const sys = useTarotInfosStore()
+const userStore = useUserStore()
+const isSaving = ref(false)
+
 definePage({
   layout: 'needloginDefaultHaveBack',
   style: {
@@ -68,326 +92,370 @@ definePage({
   },
 })
 
-const urls = {
-  getConfig: '/api/user/info',
-}
-onLoad(() => {
-  getConfig()
-})
-
-function getConfig() {
-  showLoading('获取配置信息...')
-  httpGet(urls.getConfig).then((res) => {
-    console.log(res, 'res')
-  }).finally(() => {
-    hideLoading()
-  })
+const spreadIdMap: Record<tarotSysType['drawType'], 'single' | 'three' | 'celtic'> = {
+  1: 'single',
+  2: 'three',
+  3: 'celtic',
 }
 
-// 当前选中的状态（将来应该从 Pinia 或 Storage 读取）
-const currentSpread = ref('single')
-const currentCharacter = ref('sinan')
+const drawTypeMap: Record<'single' | 'three' | 'celtic', tarotSysType['drawType']> = {
+  single: '1',
+  three: '2',
+  celtic: '3',
+}
 
-// 增加更多的配置元数据
-const configLayout: any = [
+const characterIdMap: Record<tarotSysType['role'], 'sinan' | 'encore'> = {
+  1: 'sinan',
+  2: 'encore',
+}
+
+const roleMap: Record<'sinan' | 'encore', tarotSysType['role']> = {
+  sinan: '1',
+  encore: '2',
+}
+
+const configLayout = [
   {
     name: '选择牌阵',
     key: 'spread',
-    subtitle: 'Spread Type',
+    subtitle: 'Spread',
     list: [
-      { id: 'single', name: '单牌指引', desc: '每日启示/快速解答', icon: '🎴' },
-      { id: 'three', name: '三圣杯', desc: '过去/现在/未来', icon: '🏆' },
-      { id: 'celtic', name: '凯尔特十字', desc: '深度剖析/全面运势', icon: '✝️' },
+      { id: 'single', name: '单牌指引', desc: '快速回答一个问题，适合日常状态确认。', icon: '✦' },
+      { id: 'three', name: '三牌阵', desc: '用过去、现在、未来整理事件脉络。', icon: '◈' },
+      { id: 'celtic', name: '凯尔特十字', desc: '适合复杂问题，信息更完整。', icon: '✧' },
     ],
   },
   {
-    name: '契约占卜师',
+    name: '解读人物',
     key: 'character',
-    subtitle: 'Diviner',
+    subtitle: 'Reader',
     list: [
       {
         id: 'sinan',
         name: '司南',
-        styleTag: '中式·严谨',
-        desc: '宿命观，透过星象与易理看穿迷雾，言语犀利。',
-        color: '#1a3b5c', // 司南的主色调：深蓝
+        styleTag: '冷静 / 直给',
+        desc: '更偏理性拆解，适合想快速理清问题核心的时候。',
       },
       {
         id: 'encore',
         name: '安可',
-        styleTag: '西式·灵动',
-        desc: '直觉系，擅长解析梦境与潜意识，温柔共情。',
-        color: '#5c1a3b', // 安可的主色调：复古红
+        styleTag: '温柔 / 感受',
+        desc: '更偏情绪共鸣，适合想听一段有陪伴感的解读。',
       },
     ],
   },
-]
+] as const
 
-// 交互逻辑
-function selectSpread(id: string) {
-  currentSpread.value = id
+const currentSpread = computed(() => spreadIdMap[sys.drawType])
+const currentCharacter = computed(() => characterIdMap[sys.role])
+const currentSpreadName = computed(() => configLayout[0].list.find(item => item.id === currentSpread.value)?.name ?? '单牌指引')
+const currentCharacterName = computed(() => configLayout[1].list.find(item => item.id === currentCharacter.value)?.name ?? '司南')
+
+onLoad(() => {
+  syncRemotePreferences()
+})
+
+async function syncRemotePreferences() {
+  showLoading('同步当前配置...')
+  try {
+    await userStore.fetchUserInfo()
+  }
+  catch (error) {
+    console.error('sync user preferences failed', error)
+  }
+  finally {
+    hideLoading()
+  }
 }
 
-function selectCharacter(id: string) {
-  currentCharacter.value = id
+function selectSpread(id: 'single' | 'three' | 'celtic') {
+  sys.setDrawType(drawTypeMap[id])
+}
+
+function selectCharacter(id: 'sinan' | 'encore') {
+  sys.setRole(roleMap[id])
+}
+
+async function saveConfig() {
+  if (isSaving.value) {
+    return
+  }
+
+  isSaving.value = true
+  showLoading('保存配置...')
+
+  try {
+    const response = await updateTarotPreferences({
+      role: sys.role,
+      drawType: sys.drawType,
+    })
+
+    userStore.setUserInfo({
+      ...userStore.userInfo,
+      ...response,
+    })
+    userStore.applyTarotPreferences(response)
+
+    uni.showToast({
+      title: '配置已保存',
+      icon: 'success',
+    })
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 350)
+  }
+  catch (error) {
+    console.error('save tarot preferences failed', error)
+    uni.showToast({
+      title: '保存失败，请稍后重试',
+      icon: 'none',
+    })
+  }
+  finally {
+    isSaving.value = false
+    hideLoading()
+  }
 }
 </script>
 
-<style scoped>
-/* 基础容器 */
+<style scoped lang="scss">
 .container {
-  color: #e0e0e0;
-  padding: 0 30rpx;
+  min-height: 100%;
+  color: #fff;
+  padding: 24rpx 24rpx 180rpx;
   box-sizing: border-box;
 }
 
-/* 分组标题样式 */
+.hero {
+  padding: 30rpx;
+  border-radius: 30rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 225, 145, 0.18), transparent 36%),
+    linear-gradient(155deg, rgba(29, 32, 76, 0.82), rgba(10, 15, 34, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18rpx 42rpx rgba(7, 9, 21, 0.26);
+}
+
+.hero-title {
+  font-size: 38rpx;
+  font-weight: 600;
+}
+
+.hero-subtitle {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.hero-pills {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 20rpx;
+}
+
+.pill {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  color: #fff2bf;
+  background: rgba(255, 221, 143, 0.12);
+}
+
+.pill.subtle {
+  color: rgba(227, 240, 255, 0.86);
+  background: rgba(112, 154, 255, 0.16);
+}
+
 .config-group {
-  margin-bottom: 50rpx;
+  margin-top: 28rpx;
 }
 
 .group-header {
   display: flex;
   align-items: baseline;
-  margin-bottom: 30rpx;
-  padding-left: 10rpx;
-  border-left: 6rpx solid #d4af37;
-  /* 黄金强调色 */
+  margin-bottom: 22rpx;
+  gap: 14rpx;
 }
 
 .group-title {
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: 600;
-  color: #fff;
-  margin-right: 15rpx;
-  letter-spacing: 2rpx;
 }
 
 .group-subtitle {
-  font-size: 24rpx;
-  color: #888;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.46);
   text-transform: uppercase;
 }
 
-/* --- 1. 抽牌类型（横向卡片） --- */
 .spread-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 20rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18rpx;
 }
 
 .spread-card {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2rpx solid rgba(255, 255, 255, 0.1);
-  border-radius: 16rpx;
-  padding: 24rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
   position: relative;
-  transition: all 0.3s ease;
+  min-height: 236rpx;
+  padding: 24rpx 20rpx;
+  border-radius: 24rpx;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
 }
 
-/* 选中状态 */
 .spread-card.is-selected {
-  background: rgba(212, 175, 55, 0.1);
-  /* 金色背景 */
-  border-color: #d4af37;
-  box-shadow: 0 0 15rpx rgba(212, 175, 55, 0.3);
+  background: linear-gradient(180deg, rgba(255, 222, 143, 0.12), rgba(255, 255, 255, 0.04));
+  border-color: rgba(255, 220, 132, 0.42);
   transform: translateY(-4rpx);
+  box-shadow: 0 14rpx 26rpx rgba(0, 0, 0, 0.16);
 }
 
 .spread-icon {
-  font-size: 48rpx;
-  margin-bottom: 15rpx;
-  opacity: 0.8;
-}
-
-.is-selected .spread-icon {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.spread-content {
-  display: flex;
-  flex-direction: column;
+  font-size: 44rpx;
 }
 
 .spread-name {
+  margin-top: 18rpx;
   font-size: 28rpx;
-  font-weight: 500;
-  color: #fff;
-  margin-bottom: 8rpx;
+  font-weight: 600;
 }
 
 .spread-desc {
+  margin-top: 12rpx;
   font-size: 22rpx;
-  color: #aaa;
-  line-height: 1.3;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.is-selected .spread-desc {
-  color: #ccc;
-}
-
-/* 选中标记 */
 .selected-mark {
   position: absolute;
-  top: -10rpx;
-  right: -10rpx;
-  width: 36rpx;
-  height: 36rpx;
-  background-color: #d4af37;
+  top: 14rpx;
+  right: 14rpx;
+  width: 20rpx;
+  height: 20rpx;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #ffd977;
+  box-shadow: 0 0 16rpx rgba(255, 217, 119, 0.56);
 }
 
-.inner-tick {
-  width: 16rpx;
-  height: 8rpx;
-  border-left: 3rpx solid #101014;
-  border-bottom: 3rpx solid #101014;
-  transform: rotate(-45deg);
-  margin-top: -4rpx;
-}
-
-/* --- 2. 占卜角色（大型卡片） --- */
 .character-container {
   display: flex;
   flex-direction: column;
-  gap: 30rpx;
+  gap: 18rpx;
 }
 
 .character-card {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2rpx solid rgba(255, 255, 255, 0.08);
-  border-radius: 20rpx;
-  padding: 30rpx;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s ease;
+  gap: 22rpx;
+  padding: 24rpx;
+  border-radius: 26rpx;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
 }
 
-/* 角色特定的选中边框和光晕 */
-.card-sinan.is-selected {
-  border-color: #3498db;
-  /* 司南 科技/神秘蓝 */
-  box-shadow: 0 0 20rpx rgba(52, 152, 219, 0.4);
+.character-card.is-selected {
+  border-color: rgba(125, 177, 255, 0.34);
+  box-shadow: 0 14rpx 26rpx rgba(0, 0, 0, 0.16);
 }
 
-.card-encore.is-selected {
-  border-color: #e74c3c;
-  /* 安可 热情/灵动红 */
-  box-shadow: 0 0 20rpx rgba(231, 76, 60, 0.4);
-}
-
-/* 角色头像占位 */
-.char-avatar-placeholder {
-  width: 110rpx;
-  height: 110rpx;
+.char-avatar {
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 30rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  font-size: 38rpx;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.card-sinan .char-avatar-placeholder {
-  background: rgba(52, 152, 219, 0.1);
-  border-color: rgba(52, 152, 219, 0.3);
+.card-sinan .char-avatar {
+  background: rgba(74, 136, 255, 0.18);
 }
 
-.card-encore .char-avatar-placeholder {
-  background: rgba(231, 76, 60, 0.1);
-  border-color: rgba(231, 76, 60, 0.3);
-}
-
-.char-legacy {
-  font-size: 50rpx;
-  font-family: 'Courier New', Courier, monospace;
-  /* 营造一种复古感 */
-  color: rgba(255, 255, 255, 0.6);
+.card-encore .char-avatar {
+  background: rgba(255, 139, 139, 0.18);
 }
 
 .char-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  width: 65%;
 }
 
 .char-header {
   display: flex;
   align-items: center;
-  margin-bottom: 10rpx;
+  flex-wrap: wrap;
+  gap: 12rpx;
 }
 
 .char-name {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #fff;
-  margin-right: 15rpx;
 }
 
 .char-style {
   font-size: 20rpx;
-  padding: 4rpx 10rpx;
-  border-radius: 6rpx;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ccc;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.74);
 }
 
-/* 角色专属标签颜色 */
 .style-sinan {
-  background: rgba(52, 152, 219, 0.2);
-  color: #85c1e9;
+  background: rgba(74, 136, 255, 0.16);
+  color: #bcd6ff;
 }
 
 .style-encore {
-  background: rgba(231, 76, 60, 0.2);
-  color: #f1948a;
+  background: rgba(255, 139, 139, 0.16);
+  color: #ffd0d0;
 }
 
 .char-desc {
+  margin-top: 10rpx;
   font-size: 24rpx;
-  color: #aaa;
-  line-height: 1.4;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.66);
 }
 
-/* 底部动作条 */
+.char-check {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  color: #fff2bf;
+  background: rgba(255, 221, 143, 0.12);
+}
+
 .action-bar {
   position: fixed;
-  bottom: 0;
   left: 0;
+  bottom: 0;
   width: 100%;
-  padding: 30rpx 50rpx;
+  padding: 30rpx 24rpx;
   padding-bottom: calc(30rpx + var(--safe-area-inset-bottom));
-  background: linear-gradient(to top, #101014 80%, rgba(16, 16, 20, 0));
   box-sizing: border-box;
-  z-index: 10;
+  background: linear-gradient(to top, rgba(8, 10, 24, 0.96) 70%, rgba(8, 10, 24, 0));
 }
 
 .save-btn {
-  background: #d4af37;
-  color: #101014;
-  font-weight: 600;
-  height: 90rpx;
-  line-height: 90rpx;
-  border-radius: 45rpx;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 999rpx;
   font-size: 30rpx;
-  letter-spacing: 4rpx;
-  box-shadow: 0 6rpx 20rpx rgba(212, 175, 55, 0.4);
-}
-
-.save-btn:active {
-  transform: translateY(2rpx);
-  box-shadow: 0 2rpx 10rpx rgba(212, 175, 55, 0.4);
+  font-weight: 600;
+  color: #0e122a;
+  background: linear-gradient(135deg, #ffd978, #ffbf6f);
+  box-shadow: 0 14rpx 26rpx rgba(255, 191, 111, 0.24);
 }
 </style>
