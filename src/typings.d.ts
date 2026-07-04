@@ -41,8 +41,8 @@ declare global {
     [key: string]: any
   }
   interface tarotSysType {
-    role: '1' | '2' // 解读角色
-    drawType: '1' | '2' | '3' // 抽牌类型 单排 | 三圣杯 | 十字
+    role: '1' | '2' // 解读角色 默认值1
+    drawType: '1' | '2' | '3' // 抽牌类型 单排 | 三圣杯 | 十字  默认值1
   }
 }
 
@@ -155,7 +155,11 @@ declare global {
      * }
      */
     // eslint-disable-next-line ts/method-signature-style
-    hideLoading<T extends UniNamespace.HideToastOption = UniNamespace.HideToastOption>(options?: T): void
+    hideLoading<
+      T extends UniNamespace.HideToastOption = UniNamespace.HideToastOption,
+    >(
+      options?: T,
+    ): void
     /**
      * 隐藏消息提示框
      *
@@ -180,7 +184,11 @@ declare global {
      * }
      */
     // eslint-disable-next-line ts/method-signature-style
-    hideToast<T extends UniNamespace.HideLoadingOption = UniNamespace.HideLoadingOption>(options?: T): void
+    hideToast<
+      T extends UniNamespace.HideLoadingOption = UniNamespace.HideLoadingOption,
+    >(
+      options?: T,
+    ): void
   }
 }
 

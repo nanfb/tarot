@@ -1,6 +1,4 @@
-import type {
-  ILoginForm,
-} from '@/api/login'
+import type { ILoginForm } from '@/api/login'
 import type { IAuthLoginRes } from '@/api/types/login'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue' // 修复：导入 computed
@@ -12,9 +10,9 @@ import {
   getWxCode,
 } from '@/api/login'
 import { isDoubleTokenRes, isSingleTokenRes } from '@/api/types/login'
+import { useTarotInfosStore } from '@/store/sys'
 import { isDoubleTokenMode } from '@/utils'
 import { useUserStore } from './user'
-
 // 初始化状态
 const tokenInfoState = isDoubleTokenMode
   ? {
@@ -193,6 +191,8 @@ export const useTokenStore = defineStore(
         console.log('退出登录-清除用户信息')
         tokenInfo.value = { ...tokenInfoState }
         uni.removeStorageSync('token')
+        // 重置抽牌
+        useTarotInfosStore().reset()
         const userStore = useUserStore()
         userStore.clearUserInfo()
       }
@@ -210,7 +210,10 @@ export const useTokenStore = defineStore(
 
       try {
         // 安全检查，确保refreshToken存在
-        if (!isDoubleTokenRes(tokenInfo.value) || !tokenInfo.value.refreshToken) {
+        if (
+          !isDoubleTokenRes(tokenInfo.value)
+          || !tokenInfo.value.refreshToken
+        ) {
           throw new Error('无效的refreshToken')
         }
 
@@ -244,7 +247,9 @@ export const useTokenStore = defineStore(
         return isSingleTokenRes(tokenInfo.value) ? tokenInfo.value.token : ''
       }
       else {
-        return isDoubleTokenRes(tokenInfo.value) ? tokenInfo.value.accessToken : ''
+        return isDoubleTokenRes(tokenInfo.value)
+          ? tokenInfo.value.accessToken
+          : ''
       }
     })
 
@@ -256,7 +261,9 @@ export const useTokenStore = defineStore(
         return false
       }
       if (isDoubleTokenMode) {
-        return isDoubleTokenRes(tokenInfo.value) && !!tokenInfo.value.accessToken
+        return (
+          isDoubleTokenRes(tokenInfo.value) && !!tokenInfo.value.accessToken
+        )
       }
       else {
         return isSingleTokenRes(tokenInfo.value) && !!tokenInfo.value.token
@@ -278,7 +285,11 @@ export const useTokenStore = defineStore(
      */
     const tryGetValidToken = async (): Promise<string> => {
       updateNowTime()
-      if (!getValidToken.value && isDoubleTokenMode && !isRefreshTokenExpired.value) {
+      if (
+        !getValidToken.value
+        && isDoubleTokenMode
+        && !isRefreshTokenExpired.value
+      ) {
         try {
           await refreshToken()
           return getValidToken.value

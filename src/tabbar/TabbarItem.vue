@@ -30,12 +30,15 @@ function getImageByIndex(index: number, item: CustomTabBarItem) {
       <view :class="[item.icon, isBulge ? 'text-80px' : 'text-20px']" />
     </template>
     <template v-if="item.iconType === 'image'">
-      <image :src="getImageByIndex(index, item)" mode="scaleToFill" :class="isBulge ? 'h-80px w-80px' : 'h-24px w-24px'" />
+      <image
+        :src="getImageByIndex(index, item)" mode="scaleToFill"
+        :class="isBulge ? 'h-80px w-80px' : 'h-24px w-24px'"
+      />
     </template>
     <view v-if="!isBulge" class="mt-2px text-12px">
       {{ item.text }}
     </view>
-    <!-- 角标显示 -->
+    <!-- 角标显示
     <view v-if="item.badge">
       <template v-if="item.badge === 'dot'">
         <view class="absolute right-0 top-0 h-2 w-2 rounded-full bg-#f56c6c" />
@@ -45,6 +48,6 @@ function getImageByIndex(index: number, item: CustomTabBarItem) {
           {{ item.badge > 99 ? '99+' : item.badge }}
         </view>
       </template>
-    </view>
+    </view> -->
   </view>
 </template>

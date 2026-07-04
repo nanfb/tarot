@@ -47,7 +47,8 @@
           :class="[`card-${item.id}`, { 'is-selected': currentCharacter === item.id }]" @tap="selectCharacter(item.id)"
         >
           <view class="char-avatar">
-            {{ item.name[0] }}
+            <!-- {{ item.name[0] }} -->
+            <img :src="item.img" class="img">
           </view>
 
           <view class="char-info">
@@ -135,12 +136,14 @@ const configLayout = [
         name: '司南',
         styleTag: '冷静 / 直给',
         desc: '更偏理性拆解，适合想快速理清问题核心的时候。',
+        img: '../../static/images/sis-q.png',
       },
       {
         id: 'encore',
         name: '安可',
         styleTag: '温柔 / 感受',
         desc: '更偏情绪共鸣，适合想听一段有陪伴感的解读。',
+        img: '../../static/images/girl-q.png',
       },
     ],
   },
@@ -370,14 +373,19 @@ async function saveConfig() {
 .char-avatar {
   width: 96rpx;
   height: 96rpx;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 38rpx;
-  font-weight: 600;
-  color: #fff;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  filter: grayscale(30%);
+
+  .img {
+    width: 100%;
+    height: 100%;
+    // margin-left: -10rpx;
+  }
 }
 
 .card-sinan .char-avatar {

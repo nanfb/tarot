@@ -1,5 +1,8 @@
 <template>
-  <z-paging ref="pagingRef" v-model="records" :paging-style="{ paddingTop: `${safeHeight}px` }" safe-area-inset-bottom :show-scrollbar="false" :fixed="true" @query="fetchHistory">
+  <z-paging
+    ref="pagingRef" v-model="records" :paging-style="{ paddingTop: `${safeHeight}px` }" safe-area-inset-bottom
+    :show-scrollbar="false" :fixed="true" @query="fetchHistory"
+  >
     <!-- <template #top>
       <view class="hero-wrapper">
         <view class="hero">
@@ -15,61 +18,63 @@
 
     <view class="history-list">
       <view v-for="record in records" :key="record.id" class="history-card" @click="toggleDrawer(record.id)">
-        <view class="history-card__top">
-          <view class="history-card__tags">
-            <view class="tag">
-              {{ getDrawTypeName(record.drawType) }}
+        <template>
+          <view class="history-card__top">
+            <view class="history-card__tags">
+              <view class="tag">
+                {{ getDrawTypeName(record.drawType) }}
+              </view>
+              <view class="tag" :class="record.role === '1' ? 'sinan' : 'anke'">
+                {{ getRoleName(record.role) }}
+              </view>
             </view>
-            <view class="tag" :class="record.role === '1' ? 'sinan' : 'anke'">
-              {{ getRoleName(record.role) }}
+            <view class="history-card__time">
+              {{ formatTime(record.createdAt) }}
             </view>
           </view>
-          <view class="history-card__time">
-            {{ formatTime(record.createdAt) }}
-          </view>
-        </view>
 
-        <view class="chips">
-          <view
-            v-for="card in record.cards" :key="`${record.id}-${card.id}-${card.spreadLabel}`" class="chip"
-            :class="{ reversed: card.isReversed }"
-          >
-            {{ card.spreadLabel }} · {{ card.name }} · {{ card.isReversed ? '逆位' : '正位' }}
+          <view class="chips">
+            <view
+              v-for="card in record.cards" :key="`${record.id}-${card.id}-${card.spreadLabel}`" class="chip"
+              :class="{ reversed: card.isReversed }"
+            >
+              {{ card.spreadLabel }} · {{ card.name }} · {{ card.isReversed ? '逆位' : '正位' }}
+            </view>
           </view>
-        </view>
 
-        <view v-if="record.userNotes" class="question-block">
-          <view class="section-title">
-            提问
-          </view>
-          <view class="section-text limit-lines" :class="{ 'is-expanded': expandedId === record.id }">
-            {{ record.userNotes }}
-          </view>
-        </view>
-
-        <view v-show="expandedId === record.id" class="drawer-content">
-          <view class="section">
+          <view v-if="record.userNotes" class="question-block">
             <view class="section-title">
-              牌阵内容
+              提问
             </view>
-            <view class="section-text">
-              {{ record.cardsContent }}
+            <view class="section-text limit-lines" :class="{ 'is-expanded': expandedId === record.id }">
+              {{ record.userNotes }}
             </view>
           </view>
 
-          <view v-if="record.interpretation" class="section">
-            <view class="section-title">
-              解读
+          <view v-show="expandedId === record.id" class="drawer-content">
+            <view class="section">
+              <view class="section-title">
+                牌阵内容
+              </view>
+              <view class="section-text">
+                {{ record.cardsContent }}
+              </view>
             </view>
-            <view class="section-text emphasis">
-              {{ record.interpretation }}
+
+            <view v-if="record.interpretation" class="section">
+              <view class="section-title">
+                解读
+              </view>
+              <view class="section-text emphasis">
+                {{ record.interpretation }}
+              </view>
             </view>
           </view>
-        </view>
 
-        <view class="drawer-indicator">
-          {{ expandedId === record.id ? '收起详情' : '展开解读' }}
-        </view>
+          <view class="drawer-indicator">
+            {{ expandedId === record.id ? '收起详情' : '展开解读' }}
+          </view>
+        </template>
       </view>
     </view>
 
@@ -243,6 +248,7 @@ function getRoleName(role: tarotSysType['role']) {
   border: 1px solid #ff7171;
   background-color: rgba(248, 154, 154, 0.15);
 }
+
 .history-card__time {
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.58);

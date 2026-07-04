@@ -39,5 +39,10 @@ export function postFooAPI2(name: string) {
 }
 /** POST 请求；支持 传递 header 的范例 */
 export function postFooAPI3(name: string) {
-  return http.post<IFooItem>('/foo', { name }, { a: 1, b: 2 }, { 'Content-Type-100': '100' })
+  return http.post<IFooItem>(
+    '/foo',
+    { name },
+    { a: 1, b: 2 },
+    { 'Content-Type-100': '100' },
+  )
 }

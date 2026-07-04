@@ -72,7 +72,7 @@ onMounted(() => {
   })
 })
 // #endif
-const activeColor = 'var(--wot-color-theme, #1890ff)'
+const activeColor = '#E0E7FF'
 const inactiveColor = '#666'
 function getColorByIndex(index: number) {
   return tabbarStore.curIdx === index ? activeColor : inactiveColor
@@ -84,10 +84,8 @@ function getColorByIndex(index: number) {
     <view class="border-and-fixed tabbar-container" @touchmove.stop.prevent>
       <view class="h-50px flex items-center">
         <view
-          v-for="(item, index) in tabbarList" :key="index"
-          class="flex flex-1 flex-col items-center justify-center"
-          :style="{ color: getColorByIndex(index) }"
-          @click="handleClick(index)"
+          v-for="(item, index) in tabbarList" :key="index" class="flex flex-1 flex-col items-center justify-center"
+          :style="{ color: getColorByIndex(index) }" @click="handleClick(index)"
         >
           <view v-if="item.isBulge" class="relative">
             <!-- 中间一个鼓包tabbarItem的处理 -->
@@ -114,6 +112,7 @@ function getColorByIndex(index: number) {
   border-top: 1px solid #eee;
   box-sizing: border-box;
 }
+
 // 中间鼓包的样式
 .bulge {
   position: absolute;
@@ -134,9 +133,10 @@ function getColorByIndex(index: number) {
     // opacity: 0.8;
   }
 }
+
 .tabbar-container {
   background: #0f0f18;
-  border-top: 2rpx solid #3749d4;
+  border-top: 2rpx solid #929ced;
   box-sizing: border-box;
 }
 </style>

@@ -3,8 +3,17 @@
     <view class="normal-mask" :class="{ mask }" />
     <view id="content">
       <view class="hero-card">
-        <view class="hero-badge">
+        <!-- <view class="hero-badge">
           {{ activeSpreadMeta.title }}
+        </view> -->
+        <view class="session-head">
+          <view class="session-tag">
+            抽牌类型：{{ activeSpreadMeta.title }}
+          </view>
+          <br>
+          <view class="session-tag subtle">
+            解读人物：{{ roleLabel }}
+          </view>
         </view>
         <view class="hero-title">
           跟随直觉抽一组牌
@@ -12,26 +21,19 @@
         <view class="hero-subtitle">
           {{ activeSpreadMeta.subtitle }}
         </view>
-        <image class="hero-image" :src="sys.role === '1' ? img1 : img2" />
+        <image class="hero-image" :src="sys.role === '1' ? sis : girl" />
       </view>
-
+      <!--
       <view class="session-card mt-50rpx w-85%">
-        <view class="session-head">
-          <view class="session-tag">
-            {{ activeSpreadMeta.title }}
-          </view>
-          <view class="session-tag subtle">
-            {{ roleLabel }}
-          </view>
-        </view>
+
         <view class="session-text">
           {{ drawSummary || '点击下方按钮开始抽取' }}
         </view>
+      </view> -->
+      <view class="uni-textarea mt-100rpx w-85%">
+        <textarea v-model.trim="userInput" class="input" type="text" placeholder="把你此刻最在意的问题留在这里" />
       </view>
-
-      <input v-model.trim="userInput" class="input mt-30rpx w-85%" type="text" placeholder="把你此刻最在意的问题留在这里" />
-
-      <view class="draw-btn mt-50rpx w-85%" @click="drawCards">
+      <view class="draw-btn mt-100rpx w-85%" @click="drawCards">
         <view class="decoration">
           <view class="moon i-line-md:moon-filled-alt-loop" />
           <view class="tarot i-arcticons:tarot-stars animate-spin animate-duration-120s animate-reverse" />
@@ -45,13 +47,8 @@
     </view>
 
     <CardPanel
-      ref="card_ref"
-      :roleLabel="roleLabel"
-      :mask="{ maskShow, maskHide }"
-      :ai-resolve="aiResolve"
-      :interpretation-text="interpretationText"
-      :is-interpreting="isInterpreting"
-      :has-interpretation="drawResolved"
+      ref="card_ref" :roleLabel="roleLabel" :mask="{ maskShow, maskHide }" :ai-resolve="aiResolve"
+      :interpretation-text="interpretationText" :is-interpreting="isInterpreting" :has-interpretation="drawResolved"
     />
   </view>
 </template>
@@ -66,8 +63,8 @@ import { getEnvBaseUrl } from '@/utils'
 import CardPanel from './components/card.vue'
 import { buildDisplayCards, formatDrawSummary, getSpreadMeta } from './components/spread'
 
-const img1 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBevxp09zr-dDk1bFvGxt-VZ7q1bNgbQACqwxrG4nwoUYVFhI0D1yYGQEAAwIAA3cAAzsE.jpg'
-const img2 = 'https://im.gurl.eu.org/file/AgACAgEAAxkDAAEBev1p090tEG_XGtg6F4s34bo37U8zcgACrAxrG4nwoUZrXy5b4cVpywEAAwIAA3cAAzsE.jpg'
+const sis = '../../static/images/sis.png'
+const girl = '../../static/images/girl.png'
 
 definePage({
   type: 'home',
@@ -147,7 +144,7 @@ async function drawCards() {
 
 const decoder = new TextDecoder('utf-8')
 const scrollToBottom = throttle(() => {
-  nextTick(() => {})
+  nextTick(() => { })
 }, 100)
 
 function aiResolve() {
@@ -332,8 +329,7 @@ function maskHide() {
 
 .hero-card {
   width: 85%;
-  height: 280rpx;
-  padding: 30rpx 30rpx 34rpx;
+  padding: 35rpx;
   border-radius: 34rpx;
   box-sizing: border-box;
   background:
@@ -356,7 +352,7 @@ function maskHide() {
 }
 
 .hero-title {
-  margin-top: 18rpx;
+  margin-top: 28rpx;
   font-size: 42rpx;
   font-weight: 600;
   line-height: 1.25;
@@ -372,12 +368,14 @@ function maskHide() {
 .hero-image {
   position: absolute;
   right: -24rpx;
-  bottom: -32rpx;
+  bottom: 0rpx;
   width: 210rpx;
   height: 210rpx;
   border-radius: 28rpx;
-  opacity: 0.18;
-  transform: rotate(-10deg);
+  opacity: 0.3;
+  transform: rotate(-8deg);
+  // -webkit-mask-image: radial-gradient(circle, black 50%, transparent 100%);
+  mask-image: radial-gradient(circle, black 50%, transparent 100%);
 }
 
 .session-card {
@@ -391,7 +389,9 @@ function maskHide() {
 
 .session-head {
   display: flex;
-  align-items: center;
+  // align-items: center;
+  flex-direction: column;
+  width: 60%;
   gap: 14rpx;
   flex-wrap: wrap;
 }
@@ -420,13 +420,13 @@ function maskHide() {
 .input {
   box-sizing: border-box;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  height: 88rpx;
-  padding: 0 30rpx;
-  line-height: 88rpx;
+  height: 200rpx;
+  padding: 30rpx;
+  // line-height: 88rpx;
   border-radius: 44rpx;
   background: linear-gradient(150deg, rgba(51, 30, 154, 0.1), rgba(26, 24, 65, 0.12));
   backdrop-filter: blur(15rpx);
-  color: #fff;
+  color: #ffffffe6;
   font-size: 28rpx;
 
   &:focus-within {

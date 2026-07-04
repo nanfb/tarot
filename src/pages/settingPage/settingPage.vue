@@ -133,9 +133,9 @@ async function loginout() {
       icon: 'success',
       duration: 1000,
     })
-    setTimeout(() => {
-      uni.navigateBack()
-    }, 1000)
+    // setTimeout(() => {
+    //   uni.navigateBack()
+    // }, 1000)
   }
   catch (error: any) {
     uni.showToast({

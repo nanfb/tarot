@@ -31,8 +31,17 @@ export interface UpdateTarotPreferencesBody {
   drawType: tarotSysType['drawType']
 }
 
-export function getTarotHistory(limit = 20) {
-  return http.get<TarotHistoryListRes>('/api/tarot/history', { limit })
+export function getTarotHistory({
+  pageNo,
+  pageSize,
+}: {
+  pageNo: number
+  pageSize: number
+}) {
+  return http.get<TarotHistoryListRes>('/api/tarot/history', {
+    pageNo,
+    pageSize,
+  })
 }
 
 export function updateTarotPreferences(data: UpdateTarotPreferencesBody) {

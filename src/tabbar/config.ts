@@ -42,13 +42,13 @@ export const nativeTabbarList: NativeTabBarItem[] = [
 // 如果需要配置鼓包，需要在 'tabbar/store.ts' 里面设置，最后在 `tabbar/index.vue` 里面更改鼓包的图片
 export const customTabbarList: CustomTabBarItem[] = [
   {
-    text: '首页',
+    text: '',
     pagePath: 'pages/index/index',
     // 注意 unocss 图标需要如下处理：（二选一）
     // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
     // 2）配置到 unocss.config.ts 的 safelist 中
     iconType: 'unocss',
-    icon: 'i-carbon-home',
+    icon: 'i-line-md-home-alt-twotone',
     // badge: 'dot',
   },
   // 鼓包配置示例（2025-12-31）
@@ -74,11 +74,11 @@ export const customTabbarList: CustomTabBarItem[] = [
   // },
   {
     pagePath: 'pages/me/me',
-    text: '我的',
+    text: '',
     // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
     // 2）配置到 unocss.config.ts 的 safelist 中
     iconType: 'unocss',
-    icon: 'i-carbon-user',
+    icon: 'i-line-md-account',
     // badge: 10,
   },
 
@@ -113,23 +113,35 @@ export const customTabbarList: CustomTabBarItem[] = [
  * 是否启用 tabbar 缓存
  * NATIVE_TABBAR(1) 和 CUSTOM_TABBAR(2) 时，需要tabbar缓存
  */
-export const tabbarCacheEnable
-  = [TABBAR_STRATEGY_MAP.NATIVE_TABBAR, TABBAR_STRATEGY_MAP.CUSTOM_TABBAR].includes(selectedTabbarStrategy)
+export const tabbarCacheEnable = [
+  TABBAR_STRATEGY_MAP.NATIVE_TABBAR,
+  TABBAR_STRATEGY_MAP.CUSTOM_TABBAR,
+].includes(selectedTabbarStrategy)
 
 /**
  * 是否启用自定义 tabbar
  * CUSTOM_TABBAR(2) 时，启用自定义tabbar
  */
-export const customTabbarEnable = [TABBAR_STRATEGY_MAP.CUSTOM_TABBAR].includes(selectedTabbarStrategy)
+export const customTabbarEnable = [TABBAR_STRATEGY_MAP.CUSTOM_TABBAR].includes(
+  selectedTabbarStrategy,
+)
 
 /**
  * 是否需要隐藏原生 tabbar
  * CUSTOM_TABBAR(2) 时，需要隐藏原生tabbar
  */
-export const needHideNativeTabbar = selectedTabbarStrategy === TABBAR_STRATEGY_MAP.CUSTOM_TABBAR
+export const needHideNativeTabbar
+  = selectedTabbarStrategy === TABBAR_STRATEGY_MAP.CUSTOM_TABBAR
 
-const _tabbarList = customTabbarEnable ? customTabbarList.map(item => ({ text: item.text, pagePath: item.pagePath })) : nativeTabbarList
-export const tabbarList = customTabbarEnable ? customTabbarList : nativeTabbarList
+const _tabbarList = customTabbarEnable
+  ? customTabbarList.map(item => ({
+      text: item.text,
+      pagePath: item.pagePath,
+    }))
+  : nativeTabbarList
+export const tabbarList = customTabbarEnable
+  ? customTabbarList
+  : nativeTabbarList
 
 const _tabbar: TabBar = {
   // 只有微信小程序支持 custom。App 和 H5 不生效
