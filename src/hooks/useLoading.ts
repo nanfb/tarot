@@ -4,7 +4,7 @@ const loading_config = reactive({
   loading: false,
   title: '命运感知中...',
   frontIcon: 'i-line-md-moon-filled-alt-loop', // 默认正面图标
-  backIcon: 'i-line-md:star-alt-filled', // 默认背面图标
+  backIcon: 'i-line-md-star-alt-filled', // 默认背面图标
 })
 
 /**

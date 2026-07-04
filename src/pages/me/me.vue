@@ -13,23 +13,27 @@
         </view>
         <!-- <view class="i-carbon-arrow-right"></view> -->
       </view>
-      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/history/history')">
+      <view
+        v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50"
+        @click="gotoPage('/pages/history/history')"
+      >
         <view>
           <view class="i-carbon-time icon"></view>
           历史记录
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
-      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingAdjust/settingAdjust')">
+      <view
+        v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50"
+        @click="gotoPage('/pages/settingAdjust/settingAdjust')"
+      >
         <view>
           <view class="i-carbon-settings-adjust icon"></view>
           抽牌配置
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view>
-      <view
-        class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/about/about')"
-      >
+      <view class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/about/about')">
         <view>
           <view class="i-carbon-notebook icon"></view>
           关于我们
@@ -43,7 +47,10 @@
         </view>
         <view class="i-carbon-arrow-right"></view>
       </view> -->
-      <view v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50" @click="gotoPage('/pages/settingPage/settingPage')">
+      <view
+        v-if="tokenStore.hasLogin" class="item" hover-class="item-hover" :hover-start-time="50"
+        @click="gotoPage('/pages/settingPage/settingPage')"
+      >
         <view>
           <view class="i-carbon-user-settings icon"></view>
           设置
@@ -51,7 +58,10 @@
         <view class="i-carbon-arrow-right"></view>
       </view>
     </view>
-    <view v-if="!tokenStore.hasLogin" class="login-btn center" hover-class="login-hover" :hover-start-time="50" @click="handleLogin">
+    <view
+      v-if="!tokenStore.hasLogin" class="login-btn center" hover-class="login-hover" :hover-start-time="50"
+      @click="handleLogin"
+    >
       立即登录
     </view>
   </view>
@@ -85,16 +95,24 @@ watchEffect(() => {
 
 // 微信小程序下登录
 async function handleLogin() {
-  // #ifdef MP-WEIXIN
-  // 微信登录
-  await tokenStore.wxLogin()
+  try {
+    showLoading('正在登录')
+    // #ifdef MP-WEIXIN
+    // 微信登录
+    await tokenStore.wxLogin()
+    // #endif
+    // #ifndef MP-WEIXIN
+    uni.navigateTo({
+      url: `${LOGIN_PAGE}`,
+    })
+    // #endif
+  }
+  catch (error) {
 
-  // #endif
-  // #ifndef MP-WEIXIN
-  uni.navigateTo({
-    url: `${LOGIN_PAGE}`,
-  })
-  // #endif
+  }
+  finally {
+    hideLoading()
+  }
 }
 
 function gotoPage(url: string) {
@@ -112,8 +130,10 @@ function gotoPage(url: string) {
   box-sizing: border-box;
   position: relative;
 }
+
 .list {
   padding: 20rpx;
+
   .item {
     width: 100%;
     display: flex;
@@ -128,11 +148,13 @@ function gotoPage(url: string) {
     backdrop-filter: blur(10rpx);
     background-color: #8a8a9637;
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+
     .icon {
       margin-right: 20rpx;
       font-size: 30rpx;
     }
   }
+
   .item-hover {
     background-color: rgba(255, 255, 255, 0.2);
     border: 2rpx solid rgba(255, 255, 255, 0.8);

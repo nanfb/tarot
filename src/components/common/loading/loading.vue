@@ -1,7 +1,7 @@
 <template>
   <view
     v-if="loading"
-    class="fixed inset-0 z-10001 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+    class="bg fixed inset-0 z-10001 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300"
     @touchmove.stop.prevent="() => { }" @click.stop="() => { }"
   >
     <view class="card-container relative h-120rpx w-80rpx">
@@ -32,16 +32,20 @@ interface Props {
   frontIcon?: string
   backIcon?: string
 }
-
+// i-line-md-star-alt-twotone i-line-md-moon-filled-alt-loop
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   title: '命运感知中...',
   frontIcon: 'i-line-md-moon-filled-alt-loop',
-  backIcon: 'i-line-md:star-alt-filled',
+  backIcon: 'i-line-md-star-alt-filled',
 })
 </script>
 
 <style scoped>
+.bg {
+  backdrop-filter: blur(10rpx);
+}
+
 .card-container {
   transform-style: preserve-3d;
   perspective: 1000px;

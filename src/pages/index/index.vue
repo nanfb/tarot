@@ -40,7 +40,7 @@
         </view>
         <view class="center">
           抽
-          <view class="star i-line-md:star-alt-filled" />
+          <view class="star i-line-md-star-alt-filled" />
           牌
         </view>
       </view>
